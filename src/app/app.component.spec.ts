@@ -1,31 +1,37 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { Shallow } from 'shallow-render';
 import { AppComponent } from './app.component';
+import { AppModule } from './app.module';
+
+declare var Zone: any;
 
 describe('AppComponent', () => {
+  let shallow: Shallow<AppComponent>;
+
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
+    shallow = new Shallow(AppComponent, AppModule);
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  it('should create the app', fakeAsync(async () => {
+    await Promise.resolve();
 
-  it(`should have as title 'shallow-render-issue'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('shallow-render-issue');
-  });
+    // FakeAsyncTestZoneSpec properly defined
+    console.log(Zone.current.get('FakeAsyncTestZoneSpec'));
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('shallow-render-issue app is running!');
-  });
+    // No problem here
+    tick(1000);
+  }));
+
+  it('should create the app', fakeAsync(async () => {
+    // FakeAsyncTestZoneSpec still defined before running shallow.render()
+    console.log(Zone.current.get('FakeAsyncTestZoneSpec'));
+
+    await shallow.render();
+
+    // FakeAsyncTestZoneSpec no longer defined after running shallow.render()
+    console.log(Zone.current.get('FakeAsyncTestZoneSpec'));
+
+    // This now throws an error
+    tick(1000);
+  }));
 });
