@@ -31,7 +31,8 @@ describe('AppComponent', () => {
     // FakeAsyncTestZoneSpec no longer defined after running shallow.render()
     console.log(Zone.current.get('FakeAsyncTestZoneSpec'));
 
-    // This now throws an error
+    // Below tick() now throws an error because of this line of code in Angular:
+    // https://github.com/angular/angular/blob/main/packages/zone.js/lib/zone-spec/fake-async-test.ts#L310
     tick(1000);
   }));
 });
